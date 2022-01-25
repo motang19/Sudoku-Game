@@ -1,11 +1,9 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
-
+ 
 class sudoku{
-  protected:
-    int * matrix;
-  public: 
+  public:
     sudoku();
     ~sudoku();
     bool usedinbox(int & num, int row, int col);
@@ -15,19 +13,32 @@ class sudoku{
     void filldiag();
     bool fillremain(int row, int col );
     void generatesudoku(int k);
-    int * getmatrix();
+    int * getMatrix();
     void removeval(int k);
+    void printsudoku();
+    bool validrow(int row);
+    bool validcol(int col);
+    bool validbox(int row, int col);
+    bool validate();
+    int findunassigned();
+    bool solve(int index);
+    void enter();
+    void operator = (sudoku b);
+
+  private:
+    int * matrix;
+    
 };
 sudoku::sudoku(){
   matrix = new int[81];
 }
-
+ 
 sudoku::~sudoku(){
   delete matrix;
   matrix = nullptr;
 }
-
-
+ 
+ 
 bool sudoku::usedinbox(int & num, int row, int col){
     for(int i{0}; i<3; ++i){
         for(int j{0}; j<3; ++j){
@@ -37,7 +48,7 @@ bool sudoku::usedinbox(int & num, int row, int col){
         }
     }
     return false;
-
+ 
 }
 bool sudoku::usedincol(int num, int col){
     for(int row{0}; row<9; ++row){
@@ -56,7 +67,7 @@ bool sudoku::usedinrow(int num, int row){
 return false;
 }
 void sudoku::fillbox(int row, int col){
-    srand((unsigned)time(0)); 
+    srand((unsigned)time(0));
     int n = rand()%9+1;
     for (int i{0}; i<3; ++i){
         for(int j{0}; j<3; ++j){
@@ -66,7 +77,7 @@ void sudoku::fillbox(int row, int col){
             matrix[col+j+(row+i)*9] = n;
         }
     }
-    
+   
 }
 void sudoku::filldiag(){
     for(int i{0}; i<9; i+=3){
@@ -97,8 +108,8 @@ bool sudoku::fillremain(int row, int col){
         return true;
       }
     }
-    
-
+   
+ 
   }
   for(int i{1}; i<10; ++i){
     if(!(((usedinbox(i, row - row%3, col-col%3))||(usedincol(i, col)||usedinrow(i, row))))){
@@ -108,68 +119,113 @@ bool sudoku::fillremain(int row, int col){
       }
       matrix[row*9+col] = 0;
     }
-    
-  
+   
+ 
   }  
   return false;  
 }
-
+int * sudoku::getMatrix(){
+  return matrix;
+}
 void sudoku::generatesudoku(int k){
   filldiag();
   fillremain(0,3);
   removeval(k);
 }
- int * sudoku::getmatrix(){
-   return matrix;
- }
- void sudoku::removeval(int k){
-
+void sudoku::removeval(int k){
+ 
     for(int i{0}; i<k; ++i){
-        
+       
         int position = rand()% 81;
         while(matrix[position] == 0){
             position = rand()% 81;
         }
         matrix[position] = 0;
-        
-    }   
+       
+    }  
 }
-
-class game: public sudoku{
-  public:
-    game(sudoku b);
-    ~game();
-    void printsudoku();
-    int findunassigned();
-    bool solve(int index);
-    void enter();
-    bool validrow(int row);
-    bool validcol(int col);
-    bool validbox(int row, int col);
-    bool validate();
-
-  private:
-    sudoku a;
-
-};
-
-game::game(sudoku b): a{b}{
-
-}
-game::~game(){
-}
-void game::printsudoku(){
-    this->generatesudoku();
+ 
+void sudoku::printsudoku(){
     for(int i{0}; i<81; ++i){
       if((i+1)%9==0){
-        std::cout<<(this->getmatrix())[i]<<std::endl;
+        std::cout<<matrix[i]<<std::endl;
       }else{
-        std::cout<<(this->getmatrix())[i];
+        std::cout<<matrix[i];
       }
-      
-    } 
+     
+    }
 }
-int game::findunassigned(){
+bool sudoku::validrow(int row){
+  int row_elem = 0;
+  while (row_elem<9){
+    for (int i{0}; i<9; ++i){
+      if(row_elem>=i){
+      }else{
+        if(matrix[row_elem+9*row] == matrix[i+row*9]){
+          return false;
+        }
+      }
+    }
+    ++row_elem;
+  }
+  return true;
+}
+bool sudoku::validcol(int col){
+  int col_elem = 0;
+  while (col_elem<9){
+    for (int i{0}; i<9; ++i){
+      if(col_elem>=i){
+      }else{
+        if(matrix[col_elem*9+col] == matrix[col+i*9]){
+          return false;
+        }
+      }
+    }
+    ++col_elem;
+  }
+  return true;
+}
+bool sudoku::validbox(int row, int col){
+  int n_row = row;
+  int n_col = col;
+  while(n_row<(row+3)){
+    if (n_col==col+3){
+      n_col = col;
+      ++n_row;
+    }
+    for (int i{0}; i<3; ++i){
+      for (int j{0}; j<3; ++j){
+        if((n_row*9+n_col)>=((row+i)*9+(col+j))){
+        }else{
+          if(matrix[(n_row)*9+(n_col)] == matrix[row*9+col]){
+            return false;
+          }
+        }
+      }
+    }
+    ++n_col;
+  }
+  return true;
+}
+bool sudoku::validate(){
+  for(int row{0}; row<9; ++row){
+    if(!validrow(row)){
+      return false;
+    }
+    for(int col{0}; col<9; ++col){
+      if(!validcol(col)){
+        return false;
+      }
+      if((col%3 == 0)&&(row%3 == 0)){
+        if(!validbox(row, col)){
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+int sudoku::findunassigned(){
   for(int i{0}; i<81; ++i){
     if(matrix[i] == 0){
       return i;
@@ -177,7 +233,7 @@ int game::findunassigned(){
   }
   return 82;
 }
-bool game::solve(int index){
+bool sudoku::solve(int index){
   int row = index/9;
   int col = index%9;
   if(index>=81){
@@ -194,91 +250,27 @@ bool game::solve(int index){
   }
   return false;
 }
-void game::enter(){
+void sudoku::enter(){
   std::cout<<"Please enter the row and column of the box you wish to make an entry in: "<<std::endl;
   int row{0};
   int col{0};
   std::cin>> row;
   std::cin>>col;
-  if((col >= 8)||(row>=8)){
+  if((col > 8)||(row>8)){
     std::cout<<"Not a valid coordinate please try again";
   }
   std::cout<<"Enter the number you want to enter: "<<std::endl;
   int num{0};
   std::cin>>num;
+  matrix[row*9 + col] = num;
   if(findunassigned()==82){
     validate();
   }
 }
-bool game::validrow(int row){
-  int * checkrow = new int[9];
-  checkrow[0] = matrix[row*9];
-  for (int i{1}; i<9; ++i){
-    for(int j{0}; j<9; ++j){
-      if((matrix[i+row*9] ==0)&&(matrix[i+row*9] == checkrow[j])){
-        return false;
-      }
-      if(checkrow[j] == 0){
-        break;
-      }
-    }
-    
-  }
-  return true;
-}
-bool game::validcol(int col){
-int * checkcol = new int[9];
-checkcol[0] = matrix[col];
-for (int i{1}; i<9; ++i){
-  for(int j{0}; j<9; ++j){
-    if((matrix[col+i*9]==0)&&(matrix[col+i*9] == checkcol[j])){
-        return false;
-      }
-      if(checkcol[j] == 0){
-        break;
-      }
+void sudoku::operator = (sudoku b){
+  for(int i{0}; i<81; ++i){
+    this->getMatrix()[i] = b.getMatrix()[i];
   }
 }
-return true;
-}
-bool game::validbox(int row, int col){
-  int * checkbox = new int[9];
-  checkbox[0] = matrix[col+row*9];
-  for(int i{0};i<3;++i){
-    for(int k{1};k<2;++k){
-      for(int j{0}; j<8;++j){
-        if((matrix[col+k+(i+row)*9]==0)||matrix[col+k+(i+row)*9] == checkbox[j])){
-        return false;
-      }
-      if(checkbox[j] == 0){
-        break;
-      }
-    }
-    
-  }
-  return true;
-}
-bool game::validate(){
-  
-  for(int row{0}; row<9; ++row){
-    if(!validrow(row)){
-      return false;
-    }
-    for(int col{0}; col<9; ++col){
-      if(!validcol(col)){
-        return false;
-      }
-      if((col%3 == 0)&&(row%3 == 0)){
-        if(!validbox(row, col)){
-          return false;
-        }
-      }
-    }
-    
-    
-  }
-  return true;
-
-
-}
-
+ 
+ 

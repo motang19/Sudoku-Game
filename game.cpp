@@ -1,47 +1,66 @@
 #include <iostream>
-#include "gamemech.cpp"
-bool game();
+
+#include <iostream>
+#include "./gamemech.cpp"
+int main();
+bool prog();
+char getAction();
 sudoku startgame();
 int main(){
-    game();
+    prog();
 }
-
-bool game(){
+ 
+bool prog(){
     sudoku a = startgame();
-    game b = a;
-    while(true){
-        char curaction{'\0'};
-        std::cout<<"Enter the action, (\'E\') to enter numbers, (\'V\') to validate solution, (\'S\') to auto-complete, (\'R\') go back to start"<<std::endl;
+    char curaction{'\0'};
+    while(curaction!='Q'){
         switch(curaction){
             case 'E':
             {
-                b.enter()
+                a.enter();
                 break;
             }
             case 'V':
             {
-                if(b.validate()){
-                    std::cout<< "Congratulations you completed the sudoku"
+                if(a.validate()){
+                    std::cout<< "Congratulations you completed the sudoku";
                 }else{
-                    std::cout<<"Something is not right please try again"
+                    std::cout<<"Something is not right please try again";
                 }
                 break;
+
             }
             case 'S':
             {
-                b.solve(blksize_t.findunassigned());
+                a.solve(a.findunassigned());
                 break;
             }
             case 'R':
             {
-                b = startgame();
+                a = startgame();
                 break;
             }
         }
-        b.printsudoku();  
-
+        a.printsudoku();
+        if(a.validate()){
+            std::cout<< "you have won congratulations";
+            a.printsudoku();
+            std::cout<<"restarting board";
+            a = startgame();
+        }
+        curaction = getAction();
     }
+    return true;
 }
+char getAction(){
+    char action {0};
+
+    std::cout<<"Enter the action, (\'E\') to enter numbers, (\'V\') to validate solution, (\'S\') to auto-complete, (\'R\') go back to start, (\'Q\') to quit"<<std::endl;
+    std::cin>>action;
+
+    return action;
+}
+    
 sudoku startgame(){
     char mode{'\0'};
     sudoku a;
@@ -51,22 +70,19 @@ sudoku startgame(){
         case 'H' :
         {
             a.generatesudoku(54);
-            return a;
+            break;
         }
         case 'M':
         {
             a.generatesudoku(44);
-            return a;
+            break;
         }
         case 'E':
         {
             a.generatesudoku(34);
-            return a;
-        }
-        default :
-        {
-            std::cout<<mode<<" is not a valid mode please retry"<<std::endl;
-            startgame();
+            break;
         }
     }
+    return a;
+
 }
